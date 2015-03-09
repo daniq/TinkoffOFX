@@ -11,36 +11,118 @@
     <script src="http://yastatic.net/bootstrap/3.3.1/js/bootstrap.min.js"></script>
     <!--<link rel="stylesheet" href="http://yastatic.net/bootstrap/3.3.1/css/bootstrap-responsive.min.css">-->
     <script src="js/bootstrap-filestyle.min.js"></script>
+    <script src="js/papaparse.min.js"></script>
 
 </head>
 <body>
 
 <div class="container-fluid">
-    <div class="row">
-        <div class="coll-md-1">
-            <h1>Tinkoff CSV file to QFX file converter</h1>
+    <h1>Tinkoff CSV file to QFX file converter</h1>
 
-            <p>This part is inside a .container class.</p>
-            <input id="fileName" type="file" class="filestyle" onchange="loadFileAsText()">
+    <input id="fileName" type="file" class="filestyle" onchange="loadFileAsText()">
 
+    <p><textarea id="fileContents" title="CSV Contents" class="form-control" rows="10"></textarea></p>
 
-            <p><textarea id="fileContents" title="CSV Contents" class="form-control" rows="10"></textarea></p>
-        </div>
-    </div>
+    <p><textarea id="ofxContents" title="OFX Contents" class="form-control" rows="10"></textarea></p>
+
+    <button id="downloadOFX" class="btn btn-default" onclick="downloadOfxFile()">OFX</button>
 </div>
 
 <script>
-    $(":file").filestyle('input');
 
     function loadFileAsText() {
         var fileToLoad = document.getElementById("fileName").files[0];
 
         var fileReader = new FileReader();
         fileReader.onload = function (fileLoadedEvent) {
-            document.getElementById("fileContents").value = fileLoadedEvent.target.result;
+            var fileContents = $("#fileContents");
+            var stringValue = fileLoadedEvent.target.result;
+            fileContents.val(stringValue);
+            someThing(stringValue);
         };
         fileReader.readAsText(fileToLoad, "windows-1251");
     }
+
+    function someThing(aString) {
+        var parseResult = Papa.parse(aString);
+        var rows = parseResult.data;
+        var ofx = '';
+
+        ofx += 'OFXHEADER:100\n';
+        ofx += 'DATA:OFXSGML\n';
+        ofx += 'VERSION:102\n';
+        ofx += 'SECURITY:NONE\n';
+        ofx += 'ENCODING:UTF-8\n';
+        ofx += 'CHARSET:NONE\n';
+        ofx += 'COMPRESSION:NONE\n';
+        ofx += 'OLDFILEUID:NONE\n';
+        ofx += 'NEWFILEUID:NONE\n\n';
+
+        ofx += '<OFX>';
+        ofx += '<BANKMSGSRSV1>';
+        ofx += '<STMTRS>';
+        ofx += '<BANKTRANLIST>';
+
+
+        rows.forEach(function (row) {
+            try {
+                var date = new Date(row[0]);
+
+                var fullDateString = date.getFullYear()
+                        + ('0' + (date.getMonth() + 1)).slice(-2)
+                        + ('0' + date.getDay()).slice(-2)
+                        + ('0' + date.getHours()).slice(-2)
+                        + ('0' + date.getMinutes()).slice(-2)
+                        + ('0' + date.getSeconds()).slice(-2);
+
+                var amount = row[6].replace(',', '.');
+
+                var name = row[8].trim();
+
+                var mcc = row[9].trim();
+
+                var memo = row[10].trim();
+
+                ofx += "<STMTTRN>\n";
+                ofx += "<TRNTYPE>PAYMENT\n";
+                ofx += '<DTPOSTED>' + fullDateString.slice(0, 8) + '\n';
+                ofx += '<TRNAMT>' + amount + '\n';
+                ofx += '<FITID>' + fullDateString + '\n';
+                ofx += '<NAME>' + name + '\n';
+                ofx += '<MEMO>' + memo + '\n';
+                ofx += '<MCC>' + mcc + '\n';
+                ofx += "</STMTTRN>\n";
+            } catch (ignored) {
+            }
+        });
+        $('#ofxContents').val(ofx);
+    }
+
+    function downloadOfxFile() {
+        var textToWrite = $('#ofxContents').val();
+        var textFileAsBlob = new Blob([textToWrite], {type: 'text/plain'});
+        var fileNameToSaveAs = 'tinkoff.ofx';
+
+        var downloadLink = document.createElement("a");
+        downloadLink.download = fileNameToSaveAs;
+        downloadLink.innerHTML = "Download File";
+        if (window.webkitURL != null) {
+            // Chrome allows the link to be clicked
+            // without actually adding it to the DOM.
+            downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+        }
+        else {
+            // Firefox requires the link to be added to the DOM
+            // before it can be clicked.
+            downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+            downloadLink.onclick = destroyClickedElement;
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+        }
+
+        downloadLink.click();
+    }
+
 </script>
 
 
