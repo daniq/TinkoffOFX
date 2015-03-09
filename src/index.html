@@ -19,13 +19,13 @@
 <div class="container-fluid">
     <h1>Tinkoff CSV file to QFX file converter</h1>
 
-    <input id="fileName" type="file" class="filestyle" onchange="loadFileAsText()">
+    <p><input id="fileName" type="file" class="filestyle" onchange="loadFileAsText()"></p>
 
     <p><textarea id="fileContents" title="CSV Contents" class="form-control" rows="10"></textarea></p>
 
     <p><textarea id="ofxContents" title="OFX Contents" class="form-control" rows="10"></textarea></p>
 
-    <button id="downloadOFX" class="btn btn-default" onclick="downloadOfxFile()">OFX</button>
+    <p><button id="downloadOFX" class="btn btn-default" onclick="downloadOfxFile()">Download OFX</button></p>
 </div>
 
 <script>
@@ -58,10 +58,10 @@
         ofx += 'OLDFILEUID:NONE\n';
         ofx += 'NEWFILEUID:NONE\n\n';
 
-        ofx += '<OFX>';
-        ofx += '<BANKMSGSRSV1>';
-        ofx += '<STMTRS>';
-        ofx += '<BANKTRANLIST>';
+        ofx += '<OFX>\n';
+        ofx += '<BANKMSGSRSV1>\n';
+        ofx += '<STMTRS>\n';
+        ofx += '<BANKTRANLIST>\n\n';
 
 
         rows.forEach(function (row) {
