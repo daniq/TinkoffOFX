@@ -73,7 +73,9 @@
 
         rows.forEach(function (row) {
             try {
-                var date = new Date(row[0]);
+                var date = parseDate(row[0]);
+
+                console.info(row[0] + ' --- ' + date);
 
                 var fullDateString = date.getFullYear()
                         + ('0' + (date.getMonth() + 1)).slice(-2)
@@ -130,6 +132,11 @@
         downloadLink.click();
     }
 
+    function parseDate(s) {
+//      accepts format  "dd.mm.yyyy hh:mm:ss"
+        var b = s.split(/\D+/);
+        return new Date(b[2], --b[1], b[0], b[3], b[4], b[5]);
+    }
 </script>
 
 
