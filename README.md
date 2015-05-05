@@ -1,2 +1,2 @@
 # TinkoffQuicken
-Converts Tinkoff ".CSV" to Quicken ".QFX" format
+Converts Tinkoff ".CSV" to Quicken ".OFX" format
