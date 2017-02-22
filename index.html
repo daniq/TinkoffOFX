@@ -73,6 +73,11 @@
 
         rows.forEach(function (row) {
             try {
+                var status = row[3];
+
+                if(status != 'OK')
+                    throw new Error('Skip failed transaction');
+
                 var date = parseDate(row[0]);
 
                 console.info(row[0] + ' --- ' + date);
